@@ -1,4 +1,4 @@
-# 双指针技巧秒杀七道链表题目
+# 双指针技巧秒杀链表题目
 
 ## [21. 合并两个有序链表](https://leetcode.cn/problems/merge-two-sorted-lists/)
 
@@ -214,37 +214,227 @@ public class Solution {
 }
 ```
 
-# 双指针技巧秒杀七道数组题目
+# 双指针技巧秒杀数组题目
 
 ## [26. 删除有序数组中的重复项](https://leetcode.cn/problems/remove-duplicates-from-sorted-array/)
 
 ```java
-
+class Solution {
+    public int removeDuplicates(int[] nums) {
+        int left = 0;
+        for(int right = 1; right < nums.length; right++){
+            if(nums[right] != nums[left]){
+                left++;
+                nums[left] = nums[right];
+            }
+        }
+        return left+1;
+    }
+}
 ```
 
+## [83. 删除排序链表中的重复元素](https://leetcode.cn/problems/remove-duplicates-from-sorted-list/)
 
+```java
+class Solution {
+    public ListNode deleteDuplicates(ListNode head) {
+        if(head == null) return null;
+        ListNode p = head;
+        while(p.next != null){
+            if(p.val == p.next.val)
+                p.next = p.next.next;
+            else
+                p = p.next;
+        }
+        return head;
+    }
+}
+```
 
+## [27. 移除元素](https://leetcode.cn/problems/remove-element/)
 
+```java
+class Solution {
+    public int removeElement(int[] nums, int val) {
+        int left = 0;
+        for(int right = 0; right < nums.length; right++){
+            if(nums[right] != val){
+                nums[left] = nums[right];
+                left++;
+            }
+        }
+        return left;
+    }
+}
+```
 
+## [283. 移动零](https://leetcode.cn/problems/move-zeroes/)
 
+```java
+class Solution {
+    public void moveZeroes(int[] nums) {
+        int left = 0;
+        for(int right = 0; right < nums.length; right++){
+            if(nums[right] != 0){
+                nums[left] = nums[right];
+                left++;
+            }
+        }
+        for(;left < nums.length; left++)
+            nums[left] = 0;
+    }
+}
+```
 
+# 滑动窗口
 
+## [76. 最小覆盖子串](https://leetcode.cn/problems/minimum-window-substring/)
 
+```java
+class Solution {
+    public String minWindow(String s, String t) {
+        Map<Character,Integer> need = new HashMap<>();
+        Map<Character,Integer> window = new HashMap<>();
 
+        for(int i = 0; i < t.length(); i++){
+            char c = t.charAt(i);
+            need.put(c,need.getOrDefault(c,0)+1);
+        }
+        
+        int cur = 0;
+        int start = 0,end = Integer.MAX_VALUE;
 
+        int left = 0;
+        for(int right = 0; right < s.length(); right++){
+            char c = s.charAt(right);
+            if(need.containsKey(c)){
+                window.put(c,window.getOrDefault(c,0)+1);
+                if(need.get(c).equals(window.get(c)))//!!!小心
+                    cur++;
+            }
+            while(cur == need.size()){
+                if(right-left < end-start){
+                    start = left;
+                    end = right;
+                }
+                c = s.charAt(left);
+                if(window.containsKey(c)){
+                    window.put(c,window.get(c)-1);
+                    if(window.get(c) < need.get(c))
+                        cur--;
+                }
+                left++;
+            }
+        }
+        return end == Integer.MAX_VALUE ? "" : s.substring(start,end+1);
+    }
+}
+```
 
+## [567. 字符串的排列](https://leetcode.cn/problems/permutation-in-string/)
 
+```java
+class Solution {
+    public boolean checkInclusion(String s1, String s2) {
+        Map<Character,Integer> window = new HashMap<>();
+        Map<Character,Integer> need = new HashMap<>();
 
+        for(char c : s1.toCharArray()){
+            need.put(c,need.getOrDefault(c,0)+1);
+        }
 
+        int cur = 0;
+        int left = 0;
+        for(int right = 0; right < s2.length(); right++){
+            char c = s2.charAt(right);
+            if(need.containsKey(c)){
+                window.put(c,window.getOrDefault(c,0)+1);
+                if(window.get(c).equals(need.get(c))){
+                    cur++;
+                }
+            }
+            while(cur == need.size()){
+                if(right-left+1 == s1.length()) return true;
+                c = s2.charAt(left);
+                if(window.containsKey(c)){
+                    window.put(c,window.get(c)-1);
+                    if(window.get(c) < need.get(c))
+                        cur--;
+                }
+                left++;
+            }
+        }
+        return false;
+    }
+}
+```
 
+## [438. 找到字符串中所有字母异位词](https://leetcode.cn/problems/find-all-anagrams-in-a-string/)
 
+```java
+class Solution {
+    public List<Integer> findAnagrams(String s, String p) {
+        Map<Character,Integer> need = new HashMap<>();
+        Map<Character,Integer> window = new HashMap<>();
+        List<Integer> list = new ArrayList<>();
 
+        for(char c : p.toCharArray())
+            need.put(c,need.getOrDefault(c,0)+1);
 
+        int cur = 0;
+        int left = 0;
+        for(int right = 0; right < s.length(); right++){
+            char c = s.charAt(right);
+            if(need.containsKey(c)){
+                window.put(c,window.getOrDefault(c,0)+1);
+                if(window.get(c).equals(need.get(c)))
+                    cur++;
+            }
 
+            while(cur == need.size()){
+                if(right-left+1 == p.length()){
+                    list.add(left);
+                }
+                    
+                c = s.charAt(left);
+                if(window.containsKey(c)){
+                    window.put(c,window.get(c)-1);
+                    if(window.get(c) < need.get(c))
+                        cur--;
+                }
+                left++;
+            }
 
+        }
+        return list;
+    }
+}
+```
 
+## [3. 无重复字符的最长子串](https://leetcode.cn/problems/longest-substring-without-repeating-characters/)
 
+```java
+class Solution {
+    public int lengthOfLongestSubstring(String s) {
+        Map<Character, Integer> window = new HashMap<>();
 
+        int max = 0;
+        int left = 0;
+        for(int right = 0; right < s.length(); right++){
+            char c = s.charAt(right);
+            if(!window.containsKey(c) || window.get(c) < left){
+                max = Math.max(max,right-left+1);
+            }else{
+                left = window.get(c)+1;
+            }
+            window.put(c,right);
+        }
+        return max;
+    }
+}
+```
+
+# 二分搜索算法核心代码模板
 
 
 
